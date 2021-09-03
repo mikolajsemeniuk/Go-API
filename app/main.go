@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 const version = "1.0.0"
@@ -14,6 +18,9 @@ const version = "1.0.0"
 type config struct {
 	port int
 	env  string
+	db   struct {
+		dsn string
+	}
 }
 
 // arg3 -> if you render this data as json set name of json as provied below
@@ -38,9 +45,16 @@ func main() {
 	//	* description of flag
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment (development | production)")
+	flag.StringVar(&cfg.db.dsn, "dsn", "postgres://tcs@localhost/go_movies?sslmode=disable", "postgres connection string")
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+
+	db, error := openDB(cfg)
+	if error != nil {
+		logger.Fatal(error)
+	}
+	defer db.Close()
 
 	app := &application{
 		config: cfg,
@@ -83,9 +97,25 @@ func main() {
 
 	logger.Println("Starting on port", cfg.port)
 
-	error := server.ListenAndServe()
+	error = server.ListenAndServe()
 
 	if error != nil {
 		log.Println(error)
 	}
+}
+
+func openDB(cfg config) (*sql.DB, error) {
+	db, error := sql.Open("postgres", cfg.db.dsn)
+	if error != nil {
+		return nil, error
+	}
+
+	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	error = db.PingContext(context)
+	if error != nil {
+		return nil, error
+	}
+	return db, nil
 }
