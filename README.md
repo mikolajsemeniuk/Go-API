@@ -25,4 +25,8 @@ CREATE DATABASE go_movies;
 \c go_movies # connect to database
 \i /home/init.sql # execute sql script
 \q # quit
+
+
+insert into movies_genres (movie_id, genre_id, created_at, updated_at) values (1, 1, '2021-05-19', '2021-05-19');
+insert into movies_genres (movie_id, genre_id, created_at, updated_at) values (1, 2, '2021-05-19', '2021-05-19');
 ```
