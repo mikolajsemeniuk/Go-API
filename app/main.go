@@ -45,7 +45,7 @@ func main() {
 	//	* description of flag
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "development", "Application environment (development | production)")
-	flag.StringVar(&cfg.db.dsn, "dsn", "postgres://root:P%40ssw0rd@localhost/go_movies?sslmode=disable", "postgres connection string")
+	flag.StringVar(&cfg.db.dsn, "dsn", "postgres://root:P%40ssw0rd@localhost:15432/go_movies?sslmode=disable", "postgres connection string")
 	//flag.StringVar(&cfg.db.dsn, "dsn", "host=localhost port=5432 user=root password= dbname=%s sslmode=disable", "postgres connection string")
 	flag.Parse()
 

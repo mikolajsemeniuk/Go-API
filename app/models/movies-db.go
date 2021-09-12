@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -94,11 +95,16 @@ func (m *DBModel) Get(id int) (*Movie, error) {
 	return &movie, nil
 }
 
-func (m *DBModel) All() ([]*Movie, error) {
+func (m *DBModel) All(genre ...int) ([]*Movie, error) {
 	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	query := `
+	where := ""
+	if len(genre) > 0 {
+		where = fmt.Sprintf("where id in (select movie_id from movies_genres where genre_id = %d)", genre[0])
+	}
+
+	query := fmt.Sprintf(`
 	SELECT
 		id,
 		title,
@@ -112,9 +118,10 @@ func (m *DBModel) All() ([]*Movie, error) {
 		updated_at
 	FROM
 		movies
+	%s
 	ORDER BY
 		title
-	`
+	`, where)
 
 	rows, error := m.DB.QueryContext(context, query)
 	if error != nil {
@@ -182,4 +189,41 @@ func (m *DBModel) All() ([]*Movie, error) {
 	}
 
 	return movies, nil
+}
+
+func (m *DBModel) GenresAll() ([]*Genre, error) {
+	context, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	query := `
+		SELECT
+			id,
+			genre_name,
+			created_at,
+			updated_at
+		FROM
+			genres
+		ORDER BY
+			genre_name
+	`
+	rows, error := m.DB.QueryContext(context, query)
+	if error != nil {
+		return nil, error
+	}
+	defer rows.Close()
+	var genres []*Genre
+
+	for rows.Next() {
+		var genre Genre
+		error := rows.Scan(
+			&genre.ID,
+			&genre.GenreName,
+			&genre.CreatedAt,
+			&genre.UpdatedAt,
+		)
+		if error != nil {
+			return nil, error
+		}
+		genres = append(genres, &genre)
+	}
+	return genres, nil
 }

@@ -18,8 +18,6 @@ func (app *application) getOneMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.logger.Print("id: ", id)
-
 	movie, error := app.models.DB.Get(id)
 
 	// movie := models.Movie{
@@ -53,4 +51,65 @@ func (app *application) getAllMovies(w http.ResponseWriter, r *http.Request) {
 		app.ErrorJSON(w, error)
 		return
 	}
+}
+
+func (app *application) getAllGenres(w http.ResponseWriter, r *http.Request) {
+	genres, error := app.models.DB.GenresAll()
+	if error != nil {
+		return
+	}
+	error = app.WriteJson(w, http.StatusOK, genres, "genres")
+	if error != nil {
+		app.ErrorJSON(w, error)
+		return
+	}
+}
+
+func (app *application) getAllMoviesByGenre(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	genreId, error := strconv.Atoi(params.ByName("genre_id"))
+
+	if error != nil {
+		app.ErrorJSON(w, error)
+	}
+	movies, error := app.models.DB.All(genreId)
+	if error != nil {
+		app.ErrorJSON(w, error)
+	}
+
+	error = app.WriteJson(w, http.StatusOK, movies, "movies")
+	if error != nil {
+		app.ErrorJSON(w, error)
+		return
+	}
+
+}
+
+func (app *application) deleteMovie(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) insertMovie(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) editMovie(w http.ResponseWriter, r *http.Request) {
+	type jsonResponse struct {
+		Ok bool `json:"ok"`
+	}
+
+	ok := jsonResponse{
+		Ok: true,
+	}
+
+	error := app.WriteJson(w, http.StatusOK, ok, "response")
+	if error != nil {
+		app.ErrorJSON(w, error)
+		return
+	}
+}
+
+func (app *application) searchMovies(w http.ResponseWriter, r *http.Request) {
+
 }
