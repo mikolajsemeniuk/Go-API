@@ -23,6 +23,7 @@ psql postgres://root:P%40ssw0rd@localhost
 \l # get all databases
 CREATE DATABASE go_movies;
 \c go_movies # connect to database
+\dt # show all databases in current db
 \i /home/init.sql # execute sql script
 \q # quit
 
